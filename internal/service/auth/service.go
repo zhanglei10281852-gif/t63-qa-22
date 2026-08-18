@@ -76,12 +76,11 @@ func (s Service) Authenticate(ctx context.Context, token string) (operator.Opera
 	if strings.TrimSpace(token) == "" {
 		return operator.Operator{}, apperror.Unauthorized(errors.New("authentication required"))
 	}
-	lookupContext := context.WithoutCancel(ctx)
-	session, err := s.Store.GetSession(lookupContext, tokenHash(token))
+	session, err := s.Store.GetSession(ctx, tokenHash(token))
 	if err != nil || !session.ValidAt(s.Clock.Now()) {
 		return operator.Operator{}, apperror.Unauthorized(errors.New("session is invalid or expired"))
 	}
-	value, err := s.Store.GetOperator(lookupContext, session.OperatorID)
+	value, err := s.Store.GetOperator(ctx, session.OperatorID)
 	if err != nil || !value.CanLogin() {
 		return operator.Operator{}, apperror.Unauthorized(errors.New("operator is unavailable"))
 	}
